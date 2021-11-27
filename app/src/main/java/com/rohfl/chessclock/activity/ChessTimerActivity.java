@@ -18,19 +18,21 @@ import android.view.WindowManager;
 import android.widget.NumberPicker;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.rohfl.chessclock.R;
 
-public class ChessTimerActivity extends AppCompatActivity implements NumberPicker.OnValueChangeListener{
+public class ChessTimerActivity extends AppCompatActivity implements NumberPicker.OnValueChangeListener {
 
     private RelativeLayout blackTimerRl, whiteTimerRl;
-    private TextView startStopTv;
+    private TextView startStopTv, whiteTimerTv, blackTimerTv;
 
     boolean isWhiteTurn = true;
     boolean isStop = false;
 
     int whiteTime = 0, blackTime = 0;
 
+    private boolean isGameStarted = false;
 
 
     Handler whiteHandler;
@@ -42,12 +44,44 @@ public class ChessTimerActivity extends AppCompatActivity implements NumberPicke
         setContentView(R.layout.activity_main);
 
         try {
-            blackTimerRl = findViewById(R.id.black_timer);
             whiteTimerRl = findViewById(R.id.white_timer);
+            blackTimerRl = findViewById(R.id.black_timer);
+            whiteTimerTv = findViewById(R.id.white_timer_tv);
+            blackTimerTv = findViewById(R.id.black_timer_tv);
             startStopTv = findViewById(R.id.start_stop_button);
 
             updateStatusBarColorMain("#FFFFFF");
             showTimeSelectionDialog();
+
+            whiteTime = 60;
+            blackTime = 60;
+
+            whiteTimerRl.setOnClickListener(v -> {
+                if (isGameStarted)
+                    isWhiteTurn = false;
+            });
+
+            blackTimerRl.setOnClickListener(v -> {
+                if (isGameStarted)
+                    isWhiteTurn = true;
+            });
+
+            startStopTv.setOnClickListener(v -> {
+                if (!isGameStarted) {
+                    isGameStarted = true;
+                    isStop = false;
+                    startStopTv.setText("pause");
+                    startTimers();
+                } else {
+                    if (!isStop) {
+                        isStop = true;
+                        startStopTv.setText("resume");
+                    } else {
+                        isStop = false;
+                        startStopTv.setText("pause");
+                    }
+                }
+            });
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -79,8 +113,12 @@ public class ChessTimerActivity extends AppCompatActivity implements NumberPicke
 
             TextView okay_tv = timeSelectionDialog.findViewById(R.id.ok_tv);
 
-            okay_tv.setOnClickListener(v-> {
-
+            okay_tv.setOnClickListener(v -> {
+                timeSelectionDialog.dismiss();
+                String time = String.format("%02d:%02d", (whiteTime / 60), (whiteTime % 60));
+                whiteTimerTv.setText(time);
+                time = String.format("%02d:%02d", (blackTime / 60), (blackTime % 60));
+                blackTimerTv.setText(time);
             });
 
         } catch (Exception e) {
@@ -90,6 +128,54 @@ public class ChessTimerActivity extends AppCompatActivity implements NumberPicke
 
     private void startTimers() {
         try {
+            whiteHandler = new Handler();
+            blackHandler = new Handler();
+
+            whiteHandler.postDelayed(
+                    new Runnable() {
+                        @Override
+                        public void run() {
+                            if (!isStop) {
+                                if (isWhiteTurn) {
+                                    whiteTime--;
+                                    String time = String.format("%02d:%02d", (whiteTime / 60), (whiteTime % 60));
+                                    if (whiteTime == 0) {
+                                        Toast.makeText(ChessTimerActivity.this, "Black Won.", Toast.LENGTH_SHORT).show();
+                                    }
+                                    whiteTimerTv.setText(time);
+                                }
+                            }
+                            if (whiteTime != 0 && blackTime != 0) {
+                                whiteHandler.postDelayed(this, 1000);
+                            } else {
+                                removeCallbacks();
+                            }
+                        }
+                    }
+                    , 1000);
+
+            blackHandler.postDelayed(
+                    new Runnable() {
+                        @Override
+                        public void run() {
+                            if (!isStop) {
+                                if (!isWhiteTurn) {
+                                    blackTime--;
+                                    String time = String.format("%02d:%02d", (blackTime / 60), (blackTime % 60));
+                                    if (blackTime == 0) {
+                                        Toast.makeText(ChessTimerActivity.this, "White Won.", Toast.LENGTH_SHORT).show();
+                                    }
+                                    blackTimerTv.setText(time);
+                                }
+                            }
+                            if (whiteTime != 0 && blackTime != 0) {
+                                blackHandler.postDelayed(this, 1000);
+                            } else {
+                                removeCallbacks();
+                            }
+                        }
+                    }
+                    , 1000);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -112,7 +198,7 @@ public class ChessTimerActivity extends AppCompatActivity implements NumberPicke
     @Override
     protected void onDestroy() {
         try {
-
+            removeCallbacks();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -122,8 +208,8 @@ public class ChessTimerActivity extends AppCompatActivity implements NumberPicke
     @Override
     public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
         try {
-            whiteTime = newVal*60;
-            blackTime = newVal*60;
+            whiteTime = newVal * 60;
+            blackTime = newVal * 60;
         } catch (Exception e) {
             e.printStackTrace();
         }

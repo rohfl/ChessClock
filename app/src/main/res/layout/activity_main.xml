@@ -26,7 +26,7 @@
                 android:textColor="@color/white"
                 android:rotation="180"
                 android:fontFamily="@font/poppins_600"
-                android:textSize="32sp"/>
+                android:textSize="48sp"/>
 
         </RelativeLayout>
 
@@ -44,7 +44,7 @@
                 android:text="mm:ss"
                 android:textColor="@color/black"
                 android:fontFamily="@font/poppins_600"
-                android:textSize="32sp"/>
+                android:textSize="48sp"/>
 
         </RelativeLayout>
 
@@ -53,16 +53,17 @@
 
     <TextView
         android:id="@+id/start_stop_button"
-        android:layout_width="120dp"
-        android:layout_height="120dp"
+        android:layout_width="140dp"
+        android:layout_height="140dp"
         android:textSize="24sp"
         android:gravity="center"
-        android:padding="8dp"
+        android:padding="16dp"
         android:layout_centerInParent="true"
-        android:text="stop"
+        android:text="start"
         android:textAllCaps="false"
         android:textColor="@color/white"
         android:fontFamily="@font/poppins_600"
         android:background="@drawable/start_stop_button_bg"/>
+
 
 </RelativeLayout>
