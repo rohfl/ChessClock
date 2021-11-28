@@ -10,20 +10,13 @@
 
 
     <TextView
+        android:id="@+id/winner_tv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
         android:fontFamily="@font/poppins_500"
-        android:text="@string/please_select_the_time_control"
         android:textColor="@color/white"
         android:textSize="18sp" />
-
-
-    <NumberPicker
-        android:id="@+id/number_picker"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:theme="@style/NumberPickerCustomText" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -41,11 +34,11 @@
             android:textSize="18sp" />
 
         <TextView
-            android:id="@+id/ok_tv"
+            android:id="@+id/rematch_tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:fontFamily="@font/poppins_600"
-            android:text="@string/ok"
+            android:text="@string/rematch"
             android:textColor="@color/white"
             android:textSize="18sp" />
 

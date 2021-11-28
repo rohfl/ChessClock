@@ -6,15 +6,16 @@ import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.ImageView;
 import android.widget.NumberPicker;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -22,10 +23,12 @@ import android.widget.Toast;
 
 import com.rohfl.chessclock.R;
 
-public class ChessTimerActivity extends AppCompatActivity implements NumberPicker.OnValueChangeListener {
+public class ChessTimerActivity extends AppCompatActivity implements NumberPicker.OnValueChangeListener,
+        MediaPlayer.OnCompletionListener {
 
     private RelativeLayout blackTimerRl, whiteTimerRl;
     private TextView startStopTv, whiteTimerTv, blackTimerTv;
+    private ImageView stopIv;
 
     boolean isWhiteTurn = true;
     boolean isStop = false;
@@ -33,10 +36,13 @@ public class ChessTimerActivity extends AppCompatActivity implements NumberPicke
     int whiteTime = 0, blackTime = 0;
 
     private boolean isGameStarted = false;
+    private boolean doubleBackToExitPressedOnce = false;
 
 
     Handler whiteHandler;
     Handler blackHandler;
+
+    MediaPlayer mediaPlayer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,6 +55,10 @@ public class ChessTimerActivity extends AppCompatActivity implements NumberPicke
             whiteTimerTv = findViewById(R.id.white_timer_tv);
             blackTimerTv = findViewById(R.id.black_timer_tv);
             startStopTv = findViewById(R.id.start_stop_button);
+            stopIv = findViewById(R.id.stop_iv);
+
+            mediaPlayer = MediaPlayer.create(this, R.raw.game_over);
+            mediaPlayer.setOnCompletionListener(this);
 
             updateStatusBarColorMain("#FFFFFF");
             showTimeSelectionDialog();
@@ -70,19 +80,23 @@ public class ChessTimerActivity extends AppCompatActivity implements NumberPicke
                 if (!isGameStarted) {
                     isGameStarted = true;
                     isStop = false;
-                    startStopTv.setText("pause");
+                    startStopTv.setText(getString(R.string.pause));
                     startTimers();
                 } else {
                     if (!isStop) {
                         isStop = true;
-                        startStopTv.setText("resume");
+                        startStopTv.setText(getString(R.string.resume));
                     } else {
                         isStop = false;
-                        startStopTv.setText("pause");
+                        startStopTv.setText(getString(R.string.pause));
                     }
                 }
             });
 
+            stopIv.setOnClickListener(v -> {
+                removeCallbacks();
+                showTimeSelectionDialog();
+            });
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -94,6 +108,7 @@ public class ChessTimerActivity extends AppCompatActivity implements NumberPicke
             Dialog timeSelectionDialog = new Dialog(this);
             timeSelectionDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
             timeSelectionDialog.getWindow().setBackgroundDrawable(new ColorDrawable(0));
+//            timeSelectionDialog.getWindow().getAttributes().windowAnimations = R.style.SlideUpDownAnim;
             View view = LayoutInflater.from(this).inflate(R.layout.select_time_dialog, null, false);
 
             timeSelectionDialog.setContentView(view);
@@ -102,8 +117,6 @@ public class ChessTimerActivity extends AppCompatActivity implements NumberPicke
             timeSelectionDialog.setCancelable(false);
             timeSelectionDialog.setCanceledOnTouchOutside(false);
             timeSelectionDialog.show();
-            Window window = timeSelectionDialog.getWindow();
-            window.setLayout(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
 
             NumberPicker numberPicker = timeSelectionDialog.findViewById(R.id.number_picker);
             numberPicker.setMinValue(1);
@@ -112,6 +125,7 @@ public class ChessTimerActivity extends AppCompatActivity implements NumberPicke
             numberPicker.setOnValueChangedListener(this);
 
             TextView okay_tv = timeSelectionDialog.findViewById(R.id.ok_tv);
+            TextView exit_tv = timeSelectionDialog.findViewById(R.id.exit_tv);
 
             okay_tv.setOnClickListener(v -> {
                 timeSelectionDialog.dismiss();
@@ -119,6 +133,11 @@ public class ChessTimerActivity extends AppCompatActivity implements NumberPicke
                 whiteTimerTv.setText(time);
                 time = String.format("%02d:%02d", (blackTime / 60), (blackTime % 60));
                 blackTimerTv.setText(time);
+            });
+
+            exit_tv.setOnClickListener(v -> {
+                timeSelectionDialog.dismiss();
+                finish();
             });
 
         } catch (Exception e) {
@@ -139,15 +158,14 @@ public class ChessTimerActivity extends AppCompatActivity implements NumberPicke
                                 if (isWhiteTurn) {
                                     whiteTime--;
                                     String time = String.format("%02d:%02d", (whiteTime / 60), (whiteTime % 60));
-                                    if (whiteTime == 0) {
-                                        Toast.makeText(ChessTimerActivity.this, "Black Won.", Toast.LENGTH_SHORT).show();
-                                    }
                                     whiteTimerTv.setText(time);
                                 }
                             }
-                            if (whiteTime != 0 && blackTime != 0) {
+                            if (whiteTime != 0) {
                                 whiteHandler.postDelayed(this, 1000);
                             } else {
+                                mediaPlayer.start();
+                                showWinnerDialog();
                                 removeCallbacks();
                             }
                         }
@@ -162,15 +180,14 @@ public class ChessTimerActivity extends AppCompatActivity implements NumberPicke
                                 if (!isWhiteTurn) {
                                     blackTime--;
                                     String time = String.format("%02d:%02d", (blackTime / 60), (blackTime % 60));
-                                    if (blackTime == 0) {
-                                        Toast.makeText(ChessTimerActivity.this, "White Won.", Toast.LENGTH_SHORT).show();
-                                    }
                                     blackTimerTv.setText(time);
                                 }
                             }
-                            if (whiteTime != 0 && blackTime != 0) {
+                            if (blackTime != 0) {
                                 blackHandler.postDelayed(this, 1000);
                             } else {
+                                mediaPlayer.start();
+                                showWinnerDialog();
                                 removeCallbacks();
                             }
                         }
@@ -182,8 +199,57 @@ public class ChessTimerActivity extends AppCompatActivity implements NumberPicke
         }
     }
 
+    private void showWinnerDialog() {
+        try {
+            Dialog winnerDialog = new Dialog(this);
+            winnerDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+            winnerDialog.getWindow().setBackgroundDrawable(new ColorDrawable(0));
+//            winnerDialog.getWindow().getAttributes().windowAnimations = R.style.SlideUpDownAnim;
+            View view = LayoutInflater.from(this).inflate(R.layout.winner_dialog, null, false);
+
+            winnerDialog.setContentView(view);
+            winnerDialog.getWindow().setGravity(Gravity.CENTER);
+            winnerDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            winnerDialog.setCancelable(false);
+            winnerDialog.setCanceledOnTouchOutside(false);
+            winnerDialog.show();
+
+            TextView winnerTv = winnerDialog.findViewById(R.id.winner_tv);
+            TextView exitTv = winnerDialog.findViewById(R.id.exit_tv);
+            TextView rematchTv = winnerDialog.findViewById(R.id.rematch_tv);
+
+            if (whiteTime == 0) {
+                winnerTv.setText(getString(R.string.black_won));
+            } else {
+                winnerTv.setText(getString(R.string.white_won));
+            }
+
+            rematchTv.setOnClickListener(v -> {
+                winnerDialog.dismiss();
+                showTimeSelectionDialog();
+            });
+
+            exitTv.setOnClickListener(v -> {
+                winnerDialog.dismiss();
+                finish();
+            });
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     private void removeCallbacks() {
         try {
+            isWhiteTurn = true;
+            isStop = false;
+
+            whiteTime = 60;
+            blackTime = 60;
+
+            isGameStarted = false;
+            startStopTv.setText(getString(R.string.start));
+
             if (whiteHandler != null) {
                 whiteHandler.removeCallbacksAndMessages(null);
             }
@@ -227,11 +293,37 @@ public class ChessTimerActivity extends AppCompatActivity implements NumberPicke
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 int systemUiVisibility = this.getWindow().getDecorView().getSystemUiVisibility();
                 int flagLightStatusBar = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
-                systemUiVisibility |= flagLightStatusBar;
+                systemUiVisibility &= ~flagLightStatusBar;
                 this.getWindow().getDecorView().setSystemUiVisibility(systemUiVisibility);
             }
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void onCompletion(MediaPlayer mp) {
+        try {
+            mediaPlayer.release();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (doubleBackToExitPressedOnce) {
+            super.onBackPressed();
+            finish();
+        } else {
+            this.doubleBackToExitPressedOnce = true;
+            Toast.makeText(this, "Please click BACK again to exit.", Toast.LENGTH_SHORT).show();
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    doubleBackToExitPressedOnce = false;
+                }
+            }, 2000);
         }
     }
 }

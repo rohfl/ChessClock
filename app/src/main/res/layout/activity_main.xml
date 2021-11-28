@@ -22,11 +22,11 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
-                android:text="mm:ss"
-                android:textColor="@color/white"
-                android:rotation="180"
                 android:fontFamily="@font/poppins_600"
-                android:textSize="48sp"/>
+                android:rotation="180"
+                android:text="@string/mm_ss"
+                android:textColor="@color/white"
+                android:textSize="48sp" />
 
         </RelativeLayout>
 
@@ -41,10 +41,10 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
-                android:text="mm:ss"
-                android:textColor="@color/black"
                 android:fontFamily="@font/poppins_600"
-                android:textSize="48sp"/>
+                android:text="@string/mm_ss"
+                android:textColor="@color/black_2"
+                android:textSize="48sp" />
 
         </RelativeLayout>
 
@@ -55,15 +55,26 @@
         android:id="@+id/start_stop_button"
         android:layout_width="140dp"
         android:layout_height="140dp"
-        android:textSize="24sp"
+        android:layout_centerInParent="true"
+        android:background="@drawable/start_stop_button_bg"
+        android:fontFamily="@font/poppins_600"
         android:gravity="center"
         android:padding="16dp"
-        android:layout_centerInParent="true"
-        android:text="start"
+        android:text="@string/start"
         android:textAllCaps="false"
         android:textColor="@color/white"
-        android:fontFamily="@font/poppins_600"
-        android:background="@drawable/start_stop_button_bg"/>
+        android:textSize="24sp" />
+
+    <ImageView
+        android:id="@+id/stop_iv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="24dp"
+        android:layout_marginEnd="24dp"
+        app:backgroundTint="@color/white"
+        app:srcCompat="@drawable/ic_baseline_stop_circle_24" />
 
 
 </RelativeLayout>

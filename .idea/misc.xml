@@ -5,8 +5,10 @@
       <map>
         <entry key="..\:/RohitFiles/Projects/ChessClock/app/src/main/res/drawable/select_time_dialog.xml" value="0.12105263157894737" />
         <entry key="..\:/RohitFiles/Projects/ChessClock/app/src/main/res/drawable/start_stop_button_bg.xml" value="0.12105263157894737" />
-        <entry key="..\:/RohitFiles/Projects/ChessClock/app/src/main/res/layout/activity_main.xml" value="0.12" />
+        <entry key="..\:/RohitFiles/Projects/ChessClock/app/src/main/res/layout/activity_main.xml" value="0.136" />
         <entry key="..\:/RohitFiles/Projects/ChessClock/app/src/main/res/layout/select_time_dialog.xml" value="0.2" />
+        <entry key="..\:/RohitFiles/Projects/ChessClock/app/src/main/res/layout/splash.xml" value="0.10400000000000001" />
+        <entry key="..\:/RohitFiles/Projects/ChessClock/app/src/main/res/layout/winner_dialog.xml" value="0.10953947368421052" />
       </map>
     </option>
   </component>
